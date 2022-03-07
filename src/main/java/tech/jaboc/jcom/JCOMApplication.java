@@ -2,7 +2,7 @@ package tech.jaboc.jcom;
 
 import javafx.animation.*;
 import javafx.application.Application;
-import javafx.geometry.*;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.input.MouseEvent;
@@ -14,15 +14,18 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
-public class HelloApplication extends Application {
+public class JCOMApplication extends Application {
+	Scene gameScene;
 	ResizableCanvas gameCanvas;
 	
+	Game game;
 	
 	@Override
 	public void start(Stage stage) throws IOException {
 		StackPane basePane = new StackPane();
 		
 		Scene scene = new Scene(basePane);
+		gameScene = scene;
 		
 		// Canvas
 		
@@ -60,11 +63,13 @@ public class HelloApplication extends Application {
 		rect.widthProperty().bind(hbox.widthProperty());
 		rect.heightProperty().bind(hbox.heightProperty());
 		
-		borderPane.setBottom(hbox);
+		//borderPane.setBottom(hbox);
 		
 		stage.setTitle("Hello!");
 		stage.setScene(scene);
 		stage.show();
+		
+		game = new Game(this);
 		
 		startGameLoop();
 	}
@@ -89,16 +94,7 @@ public class HelloApplication extends Application {
 		double width = gameCanvas.getWidth();
 		double height = gameCanvas.getHeight();
 		
-		double deltaTime = (System.nanoTime() - lastNanos) / 1_000_000_000.0;
-		lastNanos = System.nanoTime();
-		g.clearRect(0, 0, width, height);
-		
-		g.setStroke(Color.RED);
-		g.strokeLine(0, 0, width, height);
-		g.strokeLine(0, height, width, 0);
-		
-		g.setTextBaseline(VPos.TOP);
-		g.fillText(String.valueOf(deltaTime), 0, 0);
+		game.draw(g, width, height);
 	}
 	
 	public static void main(String[] args) {
