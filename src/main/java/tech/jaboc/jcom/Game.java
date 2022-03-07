@@ -1,10 +1,10 @@
 package tech.jaboc.jcom;
 
-import javafx.geometry.VPos;
+import javafx.geometry.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.Affine;
+import javafx.scene.transform.*;
 
 import java.util.*;
 
@@ -58,7 +58,7 @@ public class Game {
 		
 		g.clearRect(0, 0, width, height);
 		
-		//scaleView(scale, scale, width / 2, height / 2);
+		scaleView(scale, scale, width / 2, height / 2);
 		translateView(cx, cy);
 		g.setTransform(getCurrentTransform());
 		
@@ -68,6 +68,10 @@ public class Game {
 		
 		g.setTextBaseline(VPos.TOP);
 		g.fillText(String.valueOf(deltaTime), 0, 0);
+		
+		
+		Point2D mousePosInWorld = screenPointToWorld(Input.getMousePos());
+		g.fillOval(mousePosInWorld.getX(), mousePosInWorld.getY(), 2, 2);
 		
 		Input.updateInput();
 	}
@@ -86,17 +90,18 @@ public class Game {
 		parent.gameScene.addEventHandler(MouseEvent.MOUSE_MOVED, mouseEvent -> mouseMovedEvents.add(mouseEvent));
 		parent.gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> keyPressedEvents.add(keyEvent));
 		parent.gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> keyReleasedEvents.add(keyEvent));
+		
 	}
 	
 	void refreshInput() {
+		while (!mouseMovedEvents.isEmpty()) {
+			Input.mouseMovedEvent(mouseMovedEvents.remove());
+		}
 		while (!mousePressedEvents.isEmpty()) {
 			Input.mousePressedEvent(mousePressedEvents.remove());
 		}
 		while (!mouseReleasedEvents.isEmpty()) {
 			Input.mouseReleasedEvent(mouseReleasedEvents.remove());
-		}
-		while (!mouseMovedEvents.isEmpty()) {
-			Input.mouseMovedEvent(mouseMovedEvents.remove());
 		}
 		while (!keyPressedEvents.isEmpty()) {
 			Input.keyPressedEvent(keyPressedEvents.remove());
@@ -165,6 +170,19 @@ public class Game {
 	
 	public Affine getCurrentTransform() {
 		return transformStack.peek();
+	}
+	
+	public Point2D worldPointToScreen(Point2D worldPoint) {
+		return transformStack.peek().transform(worldPoint);
+	}
+	
+	public Point2D screenPointToWorld(Point2D screenPoint) {
+		try {
+			return transformStack.peek().inverseTransform(screenPoint);
+		} catch (NonInvertibleTransformException e) {
+			e.printStackTrace();
+			return Point2D.ZERO;
+		}
 	}
 	
 	//endregion
