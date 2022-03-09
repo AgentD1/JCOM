@@ -1,10 +1,13 @@
 package tech.jaboc.jcom;
 
-import javafx.geometry.*;
+import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.*;
-import javafx.scene.paint.Color;
 import javafx.scene.transform.*;
+import tech.jaboc.jcom.mission.ai.AiTeam;
+import tech.jaboc.jcom.mission.common.MissionManagerProxy;
+import tech.jaboc.jcom.mission.manager.*;
+import tech.jaboc.jcom.mission.player.MissionRenderer;
 
 import java.util.*;
 
@@ -12,6 +15,8 @@ public class Game {
 	long lastNanos = 0;
 	
 	public JCOMApplication parent;
+	
+	MissionRenderer renderer;
 	
 	public Game(JCOMApplication parent) {
 		this.parent = parent;
@@ -23,6 +28,24 @@ public class Game {
 		lastNanos = System.nanoTime();
 		
 		Input.initialize(this);
+		
+		MissionManager missionManager = new MissionManager(2);
+		
+		//PlayerTeam playerTeam = new PlayerTeam(new MissionManagerProxy(missionManager));
+		AiTeam aiTeam = new AiTeam(new MissionManagerProxy(missionManager));
+		
+		renderer = new MissionRenderer(new MissionManagerProxy(missionManager));
+		
+		Thread missionManagerThread = new Thread(missionManager::start);
+		missionManagerThread.setDaemon(true);
+		missionManagerThread.start();
+		
+		renderer.start();
+		//new Thread(playerTeam::gameLoop).start();
+		
+		Thread aiTeamThread = new Thread(aiTeam::gameLoop);
+		aiTeamThread.setDaemon(true);
+		aiTeamThread.start();
 	}
 	
 	GraphicsContext currentGraphics;
@@ -36,42 +59,44 @@ public class Game {
 		refreshInput();
 		resetTransformStack();
 		
-		if (Input.getKey(KeyCode.W.getCode())) {
-			cy++;
-		}
-		if (Input.getKey(KeyCode.S.getCode())) {
-			cy--;
-		}
-		if (Input.getKey(KeyCode.A.getCode())) {
-			cx++;
-		}
-		if (Input.getKey(KeyCode.D.getCode())) {
-			cx--;
-		}
-		
-		if (Input.getKeyDown(KeyCode.Q.getCode())) {
-			scale /= 1.25;
-		}
-		if (Input.getKeyDown(KeyCode.E.getCode())) {
-			scale *= 1.25;
-		}
-		
-		g.clearRect(0, 0, width, height);
-		
-		scaleView(scale, scale, width / 2, height / 2);
-		translateView(cx, cy);
-		g.setTransform(getCurrentTransform());
-		
-		g.setStroke(Color.RED);
-		g.strokeLine(0, 0, width, height);
-		g.strokeLine(0, height, width, 0);
-		
-		g.setTextBaseline(VPos.TOP);
-		g.fillText(String.valueOf(deltaTime), 0, 0);
-		
-		
-		Point2D mousePosInWorld = screenPointToWorld(Input.getMousePos());
-		g.fillOval(mousePosInWorld.getX(), mousePosInWorld.getY(), 2, 2);
+		renderer.draw(g, width, height);
+
+//		if (Input.getKey(KeyCode.W.getCode())) {
+//			cy++;
+//		}
+//		if (Input.getKey(KeyCode.S.getCode())) {
+//			cy--;
+//		}
+//		if (Input.getKey(KeyCode.A.getCode())) {
+//			cx++;
+//		}
+//		if (Input.getKey(KeyCode.D.getCode())) {
+//			cx--;
+//		}
+//
+//		if (Input.getKeyDown(KeyCode.Q.getCode())) {
+//			scale /= 1.25;
+//		}
+//		if (Input.getKeyDown(KeyCode.E.getCode())) {
+//			scale *= 1.25;
+//		}
+//
+//		g.clearRect(0, 0, width, height);
+//
+//		scaleView(scale, scale, width / 2, height / 2);
+//		translateView(cx, cy);
+//		g.setTransform(getCurrentTransform());
+//
+//		g.setStroke(Color.RED);
+//		g.strokeLine(0, 0, width, height);
+//		g.strokeLine(0, height, width, 0);
+//
+//		g.setTextBaseline(VPos.TOP);
+//		g.fillText(String.valueOf(deltaTime), 0, 0);
+//
+//
+//		Point2D mousePosInWorld = screenPointToWorld(Input.getMousePos());
+//		g.fillOval(mousePosInWorld.getX(), mousePosInWorld.getY(), 2, 2);
 		
 		Input.updateInput();
 	}

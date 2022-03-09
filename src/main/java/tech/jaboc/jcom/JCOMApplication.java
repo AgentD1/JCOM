@@ -84,6 +84,8 @@ public class JCOMApplication extends Application {
 		
 		lastNanos = System.nanoTime();
 		
+		game.start();
+		
 		timeline.playFromStart();
 	}
 	
