@@ -43,7 +43,7 @@ public class MissionManager {
 				if (units.stream().noneMatch(unit -> unit.x == fx && unit.y == fy)) break;
 			}
 			
-			units.add(new Unit((int) (Math.random() * 2), x, y));
+			units.add(new Unit((int) (Math.random() * 2), x, y, 2));
 		}
 		
 		map = new Map(20, 20);
