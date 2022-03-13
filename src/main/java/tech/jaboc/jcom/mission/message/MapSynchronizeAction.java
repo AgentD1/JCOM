@@ -1,17 +1,18 @@
 package tech.jaboc.jcom.mission.message;
 
-import tech.jaboc.jcom.mission.common.Map;
+import tech.jaboc.jcom.mission.ai.AiTeam;
+import tech.jaboc.jcom.mission.common.*;
+import tech.jaboc.jcom.mission.player.PlayerTeam;
 
 import java.io.*;
 
-public class MapSynchronizeAction extends Message {
+public class MapSynchronizeAction extends Message implements IAiTeamExecutable, IPlayerTeamExecutable {
 	public Map map;
 	
 	public MapSynchronizeAction(Map map) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = null;
-			oos = new ObjectOutputStream(baos);
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(map);
 			
 			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
@@ -20,5 +21,15 @@ public class MapSynchronizeAction extends Message {
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void executeAiTeamMessage(AiTeam team) {
+		team.map = map;
+	}
+	
+	@Override
+	public void executePlayerTeamAction(PlayerTeam team) {
+		team.localMapCopy = map;
 	}
 }

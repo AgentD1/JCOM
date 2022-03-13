@@ -6,7 +6,7 @@ import javafx.scene.input.*;
 import javafx.scene.transform.*;
 import tech.jaboc.jcom.mission.ai.AiTeam;
 import tech.jaboc.jcom.mission.common.MissionManagerProxy;
-import tech.jaboc.jcom.mission.manager.*;
+import tech.jaboc.jcom.mission.manager.MissionManager;
 import tech.jaboc.jcom.mission.player.MissionRenderer;
 
 import java.util.*;
@@ -38,6 +38,7 @@ public class Game {
 		
 		Thread missionManagerThread = new Thread(missionManager::start);
 		missionManagerThread.setDaemon(true);
+		missionManagerThread.setName("Mission Manager Thread");
 		missionManagerThread.start();
 		
 		renderer.start();
@@ -45,6 +46,7 @@ public class Game {
 		
 		Thread aiTeamThread = new Thread(aiTeam::gameLoop);
 		aiTeamThread.setDaemon(true);
+		aiTeamThread.setName("AI Team Thread");
 		aiTeamThread.start();
 	}
 	

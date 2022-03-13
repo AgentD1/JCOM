@@ -11,8 +11,8 @@ public final class Input {
 	static boolean[] currentKeys = new boolean[1024];
 	static boolean[] previousKeys = new boolean[1024];
 	
-	static boolean[] currentMouseButtons = new boolean[3];
-	static boolean[] previousMouseButtons = new boolean[3];
+	static boolean[] currentMouseButtons = new boolean[16];
+	static boolean[] previousMouseButtons = new boolean[16];
 	
 	public static int mouseWheel = 0;
 	public static boolean mouseWheelChangedThisFrame = false;
@@ -37,11 +37,11 @@ public final class Input {
 	}
 	
 	static void mousePressedEvent(MouseEvent e) {
-		mouseButtonPressed(e.getButton().ordinal() - 1);
+		mouseButtonPressed(e.getButton().ordinal());
 	}
 	
 	static void mouseReleasedEvent(MouseEvent e) {
-		mouseButtonReleased(e.getButton().ordinal() - 1);
+		mouseButtonReleased(e.getButton().ordinal());
 	}
 	
 	static void keyPressedEvent(KeyEvent e) {

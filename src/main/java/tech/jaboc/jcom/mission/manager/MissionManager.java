@@ -17,7 +17,7 @@ public class MissionManager {
 	
 	AtomicBoolean gameStarted = new AtomicBoolean(false);
 	
-	Map map;
+	public Map map;
 	
 	public MissionManager(int expectedTeams) {
 		this.expectedTeams = expectedTeams;
@@ -43,7 +43,7 @@ public class MissionManager {
 				if (units.stream().noneMatch(unit -> unit.x == fx && unit.y == fy)) break;
 			}
 			
-			units.add(new Unit((int) (Math.random() * 2), x, y, 2));
+			units.add(new Unit((int) (Math.random() * 2), x, y, 2, i));
 		}
 		
 		map = new Map(20, 20);
@@ -56,7 +56,6 @@ public class MissionManager {
 		while (!gameStarted.get()) {
 			try {
 				Message message = incomingMessages.poll(50, TimeUnit.MILLISECONDS);
-				System.out.println("Message received!");
 				if (message == null) continue;
 				if (message instanceof TeamJoinRequest teamJoinRequest) {
 					System.out.println("TeamJoinRequest!! " + teamJoinRequest.team.teamName);
@@ -74,21 +73,20 @@ public class MissionManager {
 			}
 		}
 		System.out.println("Game started!");
-		teams.stream().filter(team -> team.teamName.equals("Player")).findFirst().get().proxy.receiveMessage(new SpeakAction("Hello!"));
-		System.out.println("Player sent");
-		while (true) {
+		while (gameStarted.get()) {
 			try {
 				Message message = incomingMessages.poll(50, TimeUnit.MILLISECONDS);
 				if (message == null) continue;
-				if (message instanceof SpeakRequest speakRequest) {
-					Message speak = new SpeakAction(speakRequest.text);
-					for (Team team : teams) {
-						team.proxy.receiveMessage(speak);
-					}
+				if (message instanceof IMissionManagerExecutable mmMessage) {
+					mmMessage.executeMissionManagerAction(this);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public List<Team> getTeams() {
+		return Collections.unmodifiableList(teams);
 	}
 }

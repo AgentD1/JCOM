@@ -21,4 +21,8 @@ public class Map implements Serializable {
 	public int getWidth() {
 		return width;
 	}
+	
+	public Unit getUnitFromId(int id) {
+		return units.stream().filter(unit -> unit.id == id).findAny().orElse(null);
+	}
 }
