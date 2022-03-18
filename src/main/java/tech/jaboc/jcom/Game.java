@@ -31,10 +31,9 @@ public class Game {
 		
 		MissionManager missionManager = new MissionManager(2);
 		
-		//PlayerTeam playerTeam = new PlayerTeam(new MissionManagerProxy(missionManager));
-		AiTeam aiTeam = new AiTeam(new MissionManagerProxy(missionManager));
+		AiTeam aiTeam = new AiTeam(new MissionManagerProxy(missionManager), "AI");
 		
-		renderer = new MissionRenderer(new MissionManagerProxy(missionManager));
+		renderer = new MissionRenderer(new MissionManagerProxy(missionManager), "Player", this);
 		
 		Thread missionManagerThread = new Thread(missionManager::start);
 		missionManagerThread.setDaemon(true);

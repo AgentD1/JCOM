@@ -9,6 +9,7 @@ public class MissionManagerProxy {
 	MissionManager missionManager;
 	
 	BlockingQueue<Message> messages = new LinkedBlockingQueue<>();
+	BlockingQueue<Message> priorityMessages = new LinkedBlockingQueue<>();
 	
 	public MissionManagerProxy(MissionManager missionManager) {
 		this.missionManager = missionManager;
@@ -20,7 +21,8 @@ public class MissionManagerProxy {
 	 * @param message The message to receive
 	 */
 	public void receiveMessage(Message message) {
-		messages.add(message);
+		if (message.isPriority()) priorityMessages.add(message);
+		else messages.add(message);
 	}
 	
 	public int getMessageCount() {
@@ -39,6 +41,28 @@ public class MissionManagerProxy {
 	public Message getNextMessage(long timeout, TimeUnit timeUnit) {
 		try {
 			return messages.poll(timeout, timeUnit);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public int getPriorityMessageCount() {
+		return priorityMessages.size();
+	}
+	
+	public Message getNextPriorityMessage() {
+		try {
+			return priorityMessages.take();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public Message getNextPriorityMessage(long timeout, TimeUnit timeUnit) {
+		try {
+			return priorityMessages.poll(timeout, timeUnit);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return null;

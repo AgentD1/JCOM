@@ -1,8 +1,12 @@
 package tech.jaboc.jcom.mission.common;
 
-public class Team {
+import java.io.Serializable;
+
+public class Team implements Serializable {
 	public String teamName;
-	public MissionManagerProxy proxy;
+	public transient MissionManagerProxy proxy;
+	
+	public int id;
 	
 	public Team(String teamName, MissionManagerProxy proxy) {
 		this.teamName = teamName;

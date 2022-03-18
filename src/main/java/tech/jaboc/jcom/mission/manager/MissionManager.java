@@ -11,7 +11,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MissionManager {
 	int expectedTeams;
+	int currentTeamId = 0;
 	List<Team> teams = new ArrayList<>();
+	int currentTurnId = 0;
 	
 	public BlockingQueue<Message> incomingMessages = new LinkedBlockingQueue<>();
 	
@@ -27,7 +29,13 @@ public class MissionManager {
 		for (int x = 0; x < length; x++) {
 			for (int y = 0; y < width; y++) {
 				tiles[x][y] = new Tile();
-				tiles[x][y].color = Color.hsb(Math.random() * 255, 1, 1);
+				tiles[x][y].x = x;
+				tiles[x][y].y = y;
+				tiles[x][y].passable = Math.random() < 0.75;
+				if (tiles[x][y].passable)
+					tiles[x][y].color = Color.hsb(Math.random() * 255, 0.1, 1);
+				else
+					tiles[x][y].color = Color.BLACK;
 			}
 		}
 		
@@ -43,7 +51,9 @@ public class MissionManager {
 				if (units.stream().noneMatch(unit -> unit.x == fx && unit.y == fy)) break;
 			}
 			
-			units.add(new Unit((int) (Math.random() * 2), x, y, 2, i));
+			Unit newUnit = new Unit((int) (Math.random() * 2), x, y, 1, 2, i);
+			newUnit.abilitySlots.add(new AbilitySlot(Unit.ActionType.Move));
+			units.add(newUnit);
 		}
 		
 		map = new Map(20, 20);
@@ -60,6 +70,8 @@ public class MissionManager {
 				if (message instanceof TeamJoinRequest teamJoinRequest) {
 					System.out.println("TeamJoinRequest!! " + teamJoinRequest.team.teamName);
 					teams.add(teamJoinRequest.team);
+					teamJoinRequest.team.id = currentTeamId;
+					currentTeamId++;
 					expectedTeams--;
 					
 					teamJoinRequest.team.proxy.receiveMessage(new MapSynchronizeAction(map));
@@ -72,6 +84,9 @@ public class MissionManager {
 				e.printStackTrace();
 			}
 		}
+		Team[] teamsArray = teams.toArray(new Team[0]);
+		SendMessageToTeams(new GameStartAction(teamsArray));
+		SendMessageToTeams(new NextTurnAction(currentTurnId));
 		System.out.println("Game started!");
 		while (gameStarted.get()) {
 			try {
@@ -83,6 +98,18 @@ public class MissionManager {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public void nextTurn() {
+		currentTurnId++;
+		currentTurnId %= teams.size();
+		SendMessageToTeams(new NextTurnAction(currentTurnId));
+	}
+	
+	public void SendMessageToTeams(Message message) {
+		for (Team team : teams) {
+			team.proxy.receiveMessage(message);
 		}
 	}
 	

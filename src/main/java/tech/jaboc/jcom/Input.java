@@ -8,11 +8,13 @@ import java.util.Arrays;
 public final class Input {
 	static Game parent;
 	
-	static boolean[] currentKeys = new boolean[1024];
-	static boolean[] previousKeys = new boolean[1024];
+	static final int NUM_KEYS = 1024;
+	static boolean[] currentKeys = new boolean[NUM_KEYS];
+	static boolean[] previousKeys = new boolean[NUM_KEYS];
 	
-	static boolean[] currentMouseButtons = new boolean[16];
-	static boolean[] previousMouseButtons = new boolean[16];
+	static final int NUM_MOUSE_BUTTONS = 16;
+	static boolean[] currentMouseButtons = new boolean[NUM_MOUSE_BUTTONS];
+	static boolean[] previousMouseButtons = new boolean[NUM_MOUSE_BUTTONS];
 	
 	public static int mouseWheel = 0;
 	public static boolean mouseWheelChangedThisFrame = false;
@@ -56,8 +58,8 @@ public final class Input {
 	 * Updates the input system for a new frame. This should never be called by client code.
 	 */
 	static void updateInput() {
-		System.arraycopy(currentKeys, 0, previousKeys, 0, 1024);
-		System.arraycopy(currentMouseButtons, 0, previousMouseButtons, 0, 3);
+		System.arraycopy(currentKeys, 0, previousKeys, 0, NUM_KEYS);
+		System.arraycopy(currentMouseButtons, 0, previousMouseButtons, 0, NUM_MOUSE_BUTTONS);
 		mouseWheelChangedThisFrame = false;
 		mouseWheel = 0;
 	}

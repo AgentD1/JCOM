@@ -5,6 +5,9 @@ import tech.jaboc.jcom.mission.manager.MissionManager;
 import tech.jaboc.jcom.mission.message.UseAbilityAction;
 import tech.jaboc.jcom.mission.player.PlayerTeam;
 
+import java.io.Serializable;
+import java.util.List;
+
 public class MoveAbility extends Ability implements IAllTeamsExecutable {
 	public MoveAbility(int unitId, int abilityId, int destX, int destY) {
 		super(unitId, abilityId);
@@ -12,6 +15,8 @@ public class MoveAbility extends Ability implements IAllTeamsExecutable {
 		this.destX = destX;
 		this.destY = destY;
 	}
+	
+	public List<Step> steps;
 	
 	public int destX, destY;
 	
@@ -35,7 +40,10 @@ public class MoveAbility extends Ability implements IAllTeamsExecutable {
 	
 	@Override
 	public void executePlayerTeamAction(PlayerTeam team) {
+		Unit unit = team.localMapCopy.getUnitFromId(unitId);
+		double x = unit.x, y = unit.y;
 		run(team.localMapCopy);
+		//team.renderer.playUnitMovementAnimation(unit, x, y);
 	}
 	
 	@Override
@@ -43,5 +51,12 @@ public class MoveAbility extends Ability implements IAllTeamsExecutable {
 		run(team.map);
 	}
 	
-	
+	public static class Step implements Serializable {
+		public int x, y;
+		
+		public Step(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+	}
 }
