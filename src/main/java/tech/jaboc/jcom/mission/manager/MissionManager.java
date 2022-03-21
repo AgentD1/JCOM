@@ -104,6 +104,10 @@ public class MissionManager {
 	public void nextTurn() {
 		currentTurnId++;
 		currentTurnId %= teams.size();
+		for(Unit unit : map.units) {
+			if(unit.allegiance == currentTurnId) unit.nextTurn();
+		}
+		
 		SendMessageToTeams(new NextTurnAction(currentTurnId));
 	}
 	

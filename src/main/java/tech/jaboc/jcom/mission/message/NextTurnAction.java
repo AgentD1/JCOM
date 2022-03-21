@@ -1,7 +1,7 @@
 package tech.jaboc.jcom.mission.message;
 
 import tech.jaboc.jcom.mission.ai.AiTeam;
-import tech.jaboc.jcom.mission.common.IAllTeamsExecutable;
+import tech.jaboc.jcom.mission.common.*;
 import tech.jaboc.jcom.mission.manager.MissionManager;
 import tech.jaboc.jcom.mission.player.PlayerTeam;
 
@@ -17,6 +17,11 @@ public class NextTurnAction extends Message implements IAllTeamsExecutable {
 		if (nextTeamId == team.teamId) {
 			team.executeTurn();
 		}
+		for(Unit u : team.map.units) {
+			if(u.allegiance == nextTeamId) {
+				u.nextTurn();
+			}
+		}
 	}
 	
 	@Override
@@ -27,5 +32,10 @@ public class NextTurnAction extends Message implements IAllTeamsExecutable {
 	@Override
 	public void executePlayerTeamAction(PlayerTeam team) {
 		team.isMyTurn = nextTeamId == team.teamId;
+		for(Unit u : team.localMapCopy.units) {
+			if(u.allegiance == nextTeamId) {
+				u.nextTurn();
+			}
+		}
 	}
 }

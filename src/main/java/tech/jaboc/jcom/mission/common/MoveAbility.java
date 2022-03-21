@@ -28,6 +28,9 @@ public class MoveAbility extends Ability implements IAllTeamsExecutable {
 		if (myUnit == null) throw new DesyncException("No unit found with the id " + unitId + "!");
 		myUnit.x = destX;
 		myUnit.y = destY;
+		
+		System.out.println(myUnit.x);
+		
 		return true;
 	}
 	

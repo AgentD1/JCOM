@@ -36,17 +36,34 @@ public class AiTeam {
 	public void executeTurn() {
 		for (Unit unit : map.units) {
 			if (unit.allegiance == teamId) {
-				while (true) {
-					int destX = random.nextInt(map.getLength());
-					int destY = random.nextInt(map.getWidth());
-					if (map.units.stream().anyMatch(u -> u.x == destX && u.y == destY)) {
+				FloodFiller.FloodFillResult result = FloodFiller.floodFill(map, map.tiles[unit.x][unit.y], 100);
+				List<FloodFiller.FloodFillTile> tiles = new ArrayList<>(result.accessibleTiles);
+				Collections.shuffle(tiles);
+				for(FloodFiller.FloodFillTile tile : tiles) {
+					FloodFiller.FloodFillTile finalTile = tile; // java cringe
+					if (map.units.stream().anyMatch(u -> u.x == finalTile.x && u.y == finalTile.y)) {
 						continue;
 					}
-					//missionManagerProxy.sendMessage(new UseAbilityAction(new MoveAbility(unit.id, 0, destX, destY)));
+					
+					ArrayList<MoveAbility.Step> steps = new ArrayList<>();
+					steps.add(new MoveAbility.Step(tile.x, tile.y));
+					while (true) {
+						FloodFiller.FloodFillTile newTile = result.prev.get(tile);
+						
+						if (newTile == null) break;
+						steps.add(new MoveAbility.Step(newTile.x, newTile.y));
+						
+						tile = newTile;
+					}
+					
+					Collections.reverse(steps);
+					
+					Ability ability = new MoveAbility(unit.id, 0, finalTile.x, finalTile.y, steps);
+					missionManagerProxy.sendMessage(new UseAbilityAction(ability));
+					System.out.println(tile.x == finalTile.x);
 					break;
-				} // TODO: make the AI team obey the new moveAbility laws
+				}
 				// TODO: Also make the units have movement distances, then make them use that
-				// TODO: Also next turn isnt working
 			}
 		}
 		

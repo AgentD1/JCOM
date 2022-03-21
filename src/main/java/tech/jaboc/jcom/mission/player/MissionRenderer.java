@@ -128,7 +128,11 @@ public class MissionRenderer {
 		}
 		
 		if (!team.isMyTurn) {
+			g.setFill(new Color(0.5, 0, 0, 0.5));
+			g.fillRect(0, height - 40, width, 40);
 			g.setFill(Color.rgb(0xE5, 0x50, 0x50));
+			g.setTextAlign(TextAlignment.CENTER);
+			g.setTextBaseline(VPos.CENTER);
 			g.fillText("ENEMY ACTIVITY", width / 2.0, height - 20);
 		}
 	}
@@ -175,8 +179,8 @@ public class MissionRenderer {
 	public void playUnitMovementAnimation(Unit u, MoveAbility ability) {
 		List<Animation> animations = new ArrayList<>(ability.steps.size() - 1);
 		for (int i = 1; i < ability.steps.size(); i++) {
-			System.out.println("ability.steps.get(i) = " + ability.steps.get(i));
-			System.out.println("ability.steps.get(i - 1) = " + ability.steps.get(i - 1));
+//			System.out.println("ability.steps.get(i) = " + ability.steps.get(i));
+//			System.out.println("ability.steps.get(i - 1) = " + ability.steps.get(i - 1));
 			animations.add(getUnitMovementAnimation(u, ability.steps.get(i - 1).x, ability.steps.get(i - 1).y, ability.steps.get(i).x, ability.steps.get(i).y));
 		}
 		floodFillTiles = null;
