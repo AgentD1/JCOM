@@ -6,6 +6,7 @@ import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.text.TextAlignment;
+import org.jetbrains.annotations.Contract;
 import tech.jaboc.jcom.*;
 import tech.jaboc.jcom.mission.common.*;
 import tech.jaboc.jcom.mission.message.*;
@@ -61,7 +62,7 @@ public class MissionRenderer {
 						Unit unit = unitMaybe.get();
 						if (unit.allegiance == team.teamId) {
 							selectedUnit = unit;
-							floodFillTiles = FloodFiller.floodFill(team.localMapCopy, team.localMapCopy.tiles[tileX][tileY], 100);
+							floodFillTiles = floodFillUnit(selectedUnit);
 						} else {
 							selectedUnit = null;
 						}
@@ -78,8 +79,29 @@ public class MissionRenderer {
 				int tileY = (int) relativeMousePos.getY();
 				
 				if (selectedUnit != null) {
-					Ability ability = new MoveAbility(selectedUnit.id, 0, tileX, tileY);
-					team.missionManagerProxy.sendMessage(new UseAbilityAction(ability));
+					FloodFiller.FloodFillTile tile = new FloodFiller.FloodFillTile(tileX, tileY, 0);
+					if (floodFillTiles == null) {
+						floodFillTiles = floodFillUnit(selectedUnit);
+					}
+					if (floodFillTiles.prev.get(tile) != null) {
+						ArrayList<MoveAbility.Step> steps = new ArrayList<>();
+						steps.add(new MoveAbility.Step(tile.x, tile.y));
+						while (true) {
+							FloodFiller.FloodFillTile newTile = floodFillTiles.prev.get(tile);
+							
+							if (newTile == null) break;
+							steps.add(new MoveAbility.Step(newTile.x, newTile.y));
+							
+							tile = newTile;
+						}
+						
+						Collections.reverse(steps);
+						
+						Ability ability = new MoveAbility(selectedUnit.id, 0, tileX, tileY, steps);
+						team.missionManagerProxy.sendMessage(new UseAbilityAction(ability));
+						
+						floodFillTiles = null;
+					}
 				}
 			}
 			
@@ -145,7 +167,7 @@ public class MissionRenderer {
 					}
 					drawUnit(g, unit);
 				}
-				return currentTime > endTime;
+				return currentTime >= endTime;
 			}
 		};
 	}
@@ -153,8 +175,11 @@ public class MissionRenderer {
 	public void playUnitMovementAnimation(Unit u, MoveAbility ability) {
 		List<Animation> animations = new ArrayList<>(ability.steps.size() - 1);
 		for (int i = 1; i < ability.steps.size(); i++) {
-			animations.add(getUnitMovementAnimation(u, ability.steps.get(i).x, ability.steps.get(i).y, ability.steps.get(i - 1).x, ability.steps.get(i - 1).y));
+			System.out.println("ability.steps.get(i) = " + ability.steps.get(i));
+			System.out.println("ability.steps.get(i - 1) = " + ability.steps.get(i - 1));
+			animations.add(getUnitMovementAnimation(u, ability.steps.get(i - 1).x, ability.steps.get(i - 1).y, ability.steps.get(i).x, ability.steps.get(i).y));
 		}
+		floodFillTiles = null;
 		currentAnimation = new SequentialAnimation(animations);
 	}
 	
@@ -194,6 +219,10 @@ public class MissionRenderer {
 			g.setStroke(Color.GREEN);
 			g.setLineWidth(2.0f);
 			
+			if (floodFillTiles == null) {
+				floodFillTiles = floodFillUnit(selectedUnit);
+			}
+			
 			Optional<FloodFiller.FloodFillTile> maybeTile = floodFillTiles.accessibleTiles.stream().filter(t -> t.x == mouseTileX && t.y == mouseTileY).findFirst();
 			if (maybeTile.isPresent()) {
 				FloodFiller.FloodFillTile tile = maybeTile.get();
@@ -201,7 +230,6 @@ public class MissionRenderer {
 					int oldX = tile.x, oldY = tile.y;
 					FloodFiller.FloodFillTile newTile = floodFillTiles.prev.get(tile);
 					if (newTile == null) break;
-					
 					
 					g.strokeLine(oldX * 20 + 10, oldY * 20 + 10, newTile.x * 20 + 10, newTile.y * 20 + 10);
 					
@@ -211,5 +239,10 @@ public class MissionRenderer {
 		}
 		g.setFill(u.allegiance == team.teamId ? Color.DARKGREEN : Color.DARKRED);
 		g.fillOval(u.x * 20 + 5, u.y * 20 + 5, 10, 10);
+	}
+	
+	@Contract(pure = true)
+	FloodFiller.FloodFillResult floodFillUnit(Unit u) {
+		return FloodFiller.floodFill(team.localMapCopy, team.localMapCopy.tiles[u.x][u.y], 100);
 	}
 }

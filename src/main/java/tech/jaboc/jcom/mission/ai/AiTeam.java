@@ -42,9 +42,11 @@ public class AiTeam {
 					if (map.units.stream().anyMatch(u -> u.x == destX && u.y == destY)) {
 						continue;
 					}
-					missionManagerProxy.sendMessage(new UseAbilityAction(new MoveAbility(unit.id, 0, destX, destY)));
+					//missionManagerProxy.sendMessage(new UseAbilityAction(new MoveAbility(unit.id, 0, destX, destY)));
 					break;
-				}
+				} // TODO: make the AI team obey the new moveAbility laws
+				// TODO: Also make the units have movement distances, then make them use that
+				// TODO: Also next turn isnt working
 			}
 		}
 		

@@ -6,14 +6,16 @@ import tech.jaboc.jcom.mission.message.UseAbilityAction;
 import tech.jaboc.jcom.mission.player.PlayerTeam;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.*;
 
 public class MoveAbility extends Ability implements IAllTeamsExecutable {
-	public MoveAbility(int unitId, int abilityId, int destX, int destY) {
+	public MoveAbility(int unitId, int abilityId, int destX, int destY, Collection<Step> steps) {
 		super(unitId, abilityId);
 		
 		this.destX = destX;
 		this.destY = destY;
+		
+		this.steps = new ArrayList<>(steps);
 	}
 	
 	public List<Step> steps;
@@ -41,9 +43,8 @@ public class MoveAbility extends Ability implements IAllTeamsExecutable {
 	@Override
 	public void executePlayerTeamAction(PlayerTeam team) {
 		Unit unit = team.localMapCopy.getUnitFromId(unitId);
-		double x = unit.x, y = unit.y;
+		team.renderer.playUnitMovementAnimation(unit, this);
 		run(team.localMapCopy);
-		//team.renderer.playUnitMovementAnimation(unit, x, y);
 	}
 	
 	@Override
@@ -57,6 +58,14 @@ public class MoveAbility extends Ability implements IAllTeamsExecutable {
 		public Step(int x, int y) {
 			this.x = x;
 			this.y = y;
+		}
+		
+		@Override
+		public String toString() {
+			return "Step{" +
+					"x=" + x +
+					", y=" + y +
+					'}';
 		}
 	}
 }
