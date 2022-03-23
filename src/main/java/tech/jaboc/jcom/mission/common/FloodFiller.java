@@ -4,6 +4,10 @@ import java.util.*;
 
 public class FloodFiller {
 	public static FloodFillResult floodFill(Map map, Tile startingTile, int depth) {
+		return floodFill(map, startingTile, depth, EnumSet.noneOf(FloodFillOptions.class));
+	}
+	
+	public static FloodFillResult floodFill(Map map, Tile startingTile, int depth, EnumSet<FloodFillOptions> options) {
 //		long starts = System.nanoTime();
 		
 		PriorityQueue<FloodFillTile> queue = new PriorityQueue<>(Comparator.comparingInt(o -> o.priority));
@@ -21,7 +25,7 @@ public class FloodFiller {
 			FloodFillTile current = queue.remove();
 			if (current.priority > depth) continue;
 			accessibleTiles.add(current);
-			for (FloodFillTile t : current.getNeighbors(map)) {
+			for (FloodFillTile t : current.getNeighbors(map, options)) {
 				if (t == null) continue;
 				if (!dist.containsKey(t)) {
 					dist.put(t, t.priority);
@@ -36,10 +40,23 @@ public class FloodFiller {
 			}
 		}
 		
+		if (!options.contains(FloodFillOptions.ALLOW_OCCUPIED)) {
+			List<FloodFillTile> evilOnes = new ArrayList<>();
+			for (FloodFillTile t : accessibleTiles) {
+				if (map.units.stream().anyMatch(u -> u.x == t.x && u.y == t.y)) {
+					evilOnes.add(t);
+				}
+			}
+			for (FloodFillTile t : evilOnes) {
+				accessibleTiles.remove(t);
+			}
+		}
+		
 		FloodFillResult result = new FloodFillResult();
 		result.dist = dist;
 		result.prev = prev;
 		result.accessibleTiles = accessibleTiles;
+		result.optionsUsed = options;
 
 
 //		long ends = System.nanoTime();
@@ -52,6 +69,7 @@ public class FloodFiller {
 		public HashSet<FloodFillTile> accessibleTiles;
 		public HashMap<FloodFillTile, FloodFillTile> prev;
 		public HashMap<FloodFillTile, Integer> dist;
+		public EnumSet<FloodFillOptions> optionsUsed;
 	}
 	
 	public static class FloodFillTile {
@@ -77,21 +95,35 @@ public class FloodFiller {
 			return Objects.hash(x, y);
 		}
 		
-		public FloodFillTile[] getNeighbors(Map map) {
+		public FloodFillTile[] getNeighbors(Map map, EnumSet<FloodFillOptions> options) {
 			FloodFillTile[] tiles = new FloodFillTile[4];
-			if (x > 0 && map.tiles[x - 1][y].passable) {
-				tiles[0] = new FloodFillTile(x - 1, y, priority + 1);
+			if (x > 0 && (!options.contains(FloodFillOptions.ALLOW_IMPASSIBLE) && map.tiles[x - 1][y].passable)) {
+				if (options.contains(FloodFillOptions.ALLOW_PASSAGE_THROUGH_OCCUPIED) || map.units.stream().noneMatch(u -> u.x == x && u.y == y)) {
+					tiles[0] = new FloodFillTile(x - 1, y, priority + 1);
+				}
 			}
-			if (x < map.getLength() - 1 && map.tiles[x + 1][y].passable) {
-				tiles[1] = new FloodFillTile(x + 1, y, priority + 1);
+			if (x < map.getLength() - 1 && (!options.contains(FloodFillOptions.ALLOW_IMPASSIBLE) && map.tiles[x + 1][y].passable)) {
+				if (options.contains(FloodFillOptions.ALLOW_PASSAGE_THROUGH_OCCUPIED) || map.units.stream().noneMatch(u -> u.x == x && u.y == y)) {
+					tiles[1] = new FloodFillTile(x + 1, y, priority + 1);
+				}
 			}
-			if (y > 0 && map.tiles[x][y - 1].passable) {
-				tiles[2] = new FloodFillTile(x, y - 1, priority + 1);
+			if (y > 0 && (!options.contains(FloodFillOptions.ALLOW_IMPASSIBLE) && map.tiles[x][y - 1].passable)) {
+				if (options.contains(FloodFillOptions.ALLOW_PASSAGE_THROUGH_OCCUPIED) || map.units.stream().noneMatch(u -> u.x == x && u.y == y)) {
+					tiles[2] = new FloodFillTile(x, y - 1, priority + 1);
+				}
 			}
-			if (y < map.getWidth() - 1 && map.tiles[x][y + 1].passable) {
-				tiles[3] = new FloodFillTile(x, y + 1, priority + 1);
+			if (y < map.getWidth() - 1 && (!options.contains(FloodFillOptions.ALLOW_IMPASSIBLE) && map.tiles[x][y + 1].passable)) {
+				if (options.contains(FloodFillOptions.ALLOW_PASSAGE_THROUGH_OCCUPIED) || map.units.stream().noneMatch(u -> u.x == x && u.y == y)) {
+					tiles[3] = new FloodFillTile(x, y + 1, priority + 1);
+				}
 			}
 			return tiles;
 		}
+	}
+	
+	public enum FloodFillOptions {
+		ALLOW_IMPASSIBLE,   // Allow impassible tiles?
+		ALLOW_OCCUPIED,     // Allow occupied tiles? (by units)
+		ALLOW_PASSAGE_THROUGH_OCCUPIED // Allow passage through occupied tiles (but not to end on one)?
 	}
 }

@@ -26,6 +26,8 @@ public class MoveAbility extends Ability implements IAllTeamsExecutable {
 	public boolean run(Map map) {
 		Unit myUnit = map.getUnitFromId(unitId);
 		if (myUnit == null) throw new DesyncException("No unit found with the id " + unitId + "!");
+		if (map.units.stream().anyMatch(u -> u.x == destX && u.y == destY))
+			throw new DesyncException("There is already a unit at these coordinates!");
 		myUnit.x = destX;
 		myUnit.y = destY;
 		

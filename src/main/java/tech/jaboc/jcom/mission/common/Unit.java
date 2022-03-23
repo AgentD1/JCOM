@@ -16,6 +16,8 @@ public class Unit implements Serializable {
 	
 	public List<AbilitySlot> abilitySlots = new ArrayList<>();
 	
+	public int movementDistance = 8;
+	
 	public final int id;
 	
 	public Unit(int allegiance, int x, int y, int numActions, int numMoveActions, int unitId) {

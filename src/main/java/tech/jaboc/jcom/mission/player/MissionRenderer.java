@@ -193,6 +193,11 @@ public class MissionRenderer {
 			for (int y = 0; y < team.localMapCopy.getWidth(); y++) {
 				g.setFill(team.localMapCopy.tiles[x][y].color);
 				g.fillRect(x * 20, y * 20, 20, 20);
+				
+				if (floodFillTiles != null && selectedUnit != null && floodFillTiles.accessibleTiles.contains(new FloodFiller.FloodFillTile(x, y, 0))) {
+					g.setFill(Color.rgb(0, 255, 0, 0.5));
+					g.fillRect(x * 20, y * 20, 20, 20);
+				}
 			}
 		}
 	}
@@ -247,6 +252,7 @@ public class MissionRenderer {
 	
 	@Contract(pure = true)
 	FloodFiller.FloodFillResult floodFillUnit(Unit u) {
-		return FloodFiller.floodFill(team.localMapCopy, team.localMapCopy.tiles[u.x][u.y], 100);
+		return FloodFiller.floodFill(team.localMapCopy, team.localMapCopy.tiles[u.x][u.y], u.movementDistance,
+				EnumSet.of(FloodFiller.FloodFillOptions.ALLOW_PASSAGE_THROUGH_OCCUPIED));
 	}
 }

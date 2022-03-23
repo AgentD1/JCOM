@@ -36,10 +36,11 @@ public class AiTeam {
 	public void executeTurn() {
 		for (Unit unit : map.units) {
 			if (unit.allegiance == teamId) {
-				FloodFiller.FloodFillResult result = FloodFiller.floodFill(map, map.tiles[unit.x][unit.y], 100);
+				FloodFiller.FloodFillResult result = FloodFiller.floodFill(map, map.tiles[unit.x][unit.y], unit.movementDistance,
+						EnumSet.of(FloodFiller.FloodFillOptions.ALLOW_PASSAGE_THROUGH_OCCUPIED));
 				List<FloodFiller.FloodFillTile> tiles = new ArrayList<>(result.accessibleTiles);
 				Collections.shuffle(tiles);
-				for(FloodFiller.FloodFillTile tile : tiles) {
+				for (FloodFiller.FloodFillTile tile : tiles) {
 					FloodFiller.FloodFillTile finalTile = tile; // java cringe
 					if (map.units.stream().anyMatch(u -> u.x == finalTile.x && u.y == finalTile.y)) {
 						continue;
@@ -63,7 +64,6 @@ public class AiTeam {
 					System.out.println(tile.x == finalTile.x);
 					break;
 				}
-				// TODO: Also make the units have movement distances, then make them use that
 			}
 		}
 		
