@@ -34,8 +34,40 @@ public class MissionRenderer {
 	
 	FloodFiller.FloodFillResult floodFillTiles;
 	
+	double cx = 0.0, cy = 0.0, cScale = 1.0;
+	double moveSpeed = 4.0, scrollSpeed = 0.2;
+	
 	public void draw(GraphicsContext g, double width, double height) {
 		frame++;
+		
+		g.clearRect(0, 0, width, height);
+		if (Input.getKey(65) || Input.getKey(37)) { // A or Left Arrow
+			cx += moveSpeed * 1 / cScale;
+		}
+		if (Input.getKey(68) || Input.getKey(39)) { // D
+			cx -= moveSpeed * 1 / cScale;
+		}
+		if (Input.getKey(87) || Input.getKey(38)) { // W
+			cy += moveSpeed * 1 / cScale;
+		}
+		if (Input.getKey(83) || Input.getKey(40)) { // S
+			cy -= moveSpeed * 1 / cScale;
+		}
+		
+		if (Input.mouseWheelChangedThisFrame && Input.mouseWheel != 0) {
+			double wheel = Input.mouseWheel < 0 ? -1 : 1;
+			
+			double zoom = Math.exp(wheel * scrollSpeed); // The exp is so that the camera zooms less the more zoomed in it is. This makes zooming very nice-feeling.
+			
+			cScale *= zoom;
+		}
+		
+		parent.translateView(width / 2.0, height / 2.0);
+		parent.scaleView(cScale);
+		parent.translateView(-width / 2.0, -height / 2.0);
+		
+		parent.translateView(cx, cy);
+		
 		while (team.missionManagerProxy.getPriorityMessageCount() != 0) {
 			Message message = team.missionManagerProxy.getNextPriorityMessage();
 			if (message instanceof IPlayerTeamExecutable ptMessage) {
@@ -52,7 +84,7 @@ public class MissionRenderer {
 		
 		if (team.isMyTurn && currentAnimation == null) {
 			if (Input.getMouseButtonDown(MouseButton.PRIMARY.ordinal())) {
-				Point2D relativeMousePos = Input.getMousePos().multiply(1.0 / 20.0);
+				Point2D relativeMousePos = parent.screenPointToWorld(Input.getMousePos()).multiply(1.0 / 20.0);
 				int tileX = (int) relativeMousePos.getX();
 				int tileY = (int) relativeMousePos.getY();
 				
@@ -74,7 +106,7 @@ public class MissionRenderer {
 				}
 			}
 			if (Input.getMouseButtonDown(MouseButton.SECONDARY.ordinal())) {
-				Point2D relativeMousePos = Input.getMousePos().multiply(1.0 / 20.0);
+				Point2D relativeMousePos = parent.screenPointToWorld(Input.getMousePos()).multiply(1.0 / 20.0);
 				int tileX = (int) relativeMousePos.getX();
 				int tileY = (int) relativeMousePos.getY();
 				
@@ -83,7 +115,7 @@ public class MissionRenderer {
 					if (floodFillTiles == null) {
 						floodFillTiles = floodFillUnit(selectedUnit);
 					}
-					if (floodFillTiles.prev.get(tile) != null) {
+					if (floodFillTiles.accessibleTiles.contains(tile)) {
 						ArrayList<MoveAbility.Step> steps = new ArrayList<>();
 						steps.add(new MoveAbility.Step(tile.x, tile.y));
 						while (true) {
@@ -110,7 +142,7 @@ public class MissionRenderer {
 			}
 		}
 		
-		g.clearRect(0, 0, width, height);
+		
 		if (team.localMapCopy == null) {
 			g.setTextBaseline(VPos.CENTER);
 			g.setTextAlign(TextAlignment.CENTER);

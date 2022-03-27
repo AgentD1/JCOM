@@ -109,6 +109,7 @@ public class Game {
 	Queue<MouseEvent> mousePressedEvents = new ArrayDeque<>();
 	Queue<MouseEvent> mouseReleasedEvents = new ArrayDeque<>();
 	Queue<MouseEvent> mouseMovedEvents = new ArrayDeque<>();
+	Queue<ScrollEvent> mouseScrollEvents = new ArrayDeque<>();
 	
 	void registerInputHandles() {
 		parent.gameScene.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> mousePressedEvents.add(mouseEvent));
@@ -116,7 +117,7 @@ public class Game {
 		parent.gameScene.addEventHandler(MouseEvent.MOUSE_MOVED, mouseEvent -> mouseMovedEvents.add(mouseEvent));
 		parent.gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> keyPressedEvents.add(keyEvent));
 		parent.gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> keyReleasedEvents.add(keyEvent));
-		
+		parent.gameScene.addEventHandler(ScrollEvent.SCROLL, scrollEvent -> mouseScrollEvents.add(scrollEvent));
 	}
 	
 	void refreshInput() {
@@ -134,6 +135,9 @@ public class Game {
 		}
 		while (!keyReleasedEvents.isEmpty()) {
 			Input.keyReleasedEvent(keyReleasedEvents.remove());
+		}
+		while (!mouseScrollEvents.isEmpty()) {
+			Input.scrollEvent(mouseScrollEvents.remove());
 		}
 	}
 	

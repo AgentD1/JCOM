@@ -16,7 +16,7 @@ public final class Input {
 	static boolean[] currentMouseButtons = new boolean[NUM_MOUSE_BUTTONS];
 	static boolean[] previousMouseButtons = new boolean[NUM_MOUSE_BUTTONS];
 	
-	public static int mouseWheel = 0;
+	public static double mouseWheel = 0;
 	public static boolean mouseWheelChangedThisFrame = false;
 	
 	static Point2D mousePos = new Point2D(0, 0);
@@ -53,6 +53,8 @@ public final class Input {
 	static void keyReleasedEvent(KeyEvent e) {
 		keyReleased(e.getCode().getCode());
 	}
+	
+	static void scrollEvent(ScrollEvent e) { mouseWheelSpun(e.getDeltaY()); }
 	
 	/**
 	 * Updates the input system for a new frame. This should never be called by client code.
@@ -117,9 +119,10 @@ public final class Input {
 	 *
 	 * @param mouseWheelValue The delta value of the mouse wheel
 	 */
-	static void mouseWheelSpun(int mouseWheelValue) {
+	static void mouseWheelSpun(double mouseWheelValue) {
 		mouseWheelChangedThisFrame = true;
-		mouseWheel = mouseWheelValue;
+		System.out.println(mouseWheelValue);
+		mouseWheel += mouseWheelValue;
 	}
 	
 	//endregion
